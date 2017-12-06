@@ -52,18 +52,17 @@ allprojects {
     }
 
     dependencies {
+        compile rootProject.ext.dependencies['jcl-over-slf4j']
+        compile rootProject.ext.dependencies['log4j-over-slf4j']
+        compile rootProject.ext.dependencies['jul-to-slf4j']
+        compile rootProject.ext.dependencies['logback-classic']
+        compile rootProject.ext.dependencies['fastjson']
         testCompile "org.springframework.boot:spring-boot-starter-test"
     }
 
     dependencyManagement {
         imports {
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-            mavenBom rootProject.ext.dependencies['slf4j-api']
-            mavenBom rootProject.ext.dependencies['jcl-over-slf4j']
-            mavenBom rootProject.ext.dependencies['log4j-over-slf4j']
-            mavenBom rootProject.ext.dependencies['jul-to-slf4j']
-            mavenBom rootProject.ext.dependencies['logback-classic']
-            mavenBom rootProject.ext.dependencies['fastjson']
         }
     }
 

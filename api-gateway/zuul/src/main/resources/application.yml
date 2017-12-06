@@ -12,6 +12,9 @@ spring:
     base-url: http://127.0.0.1:9411
   application:
     name: zuul
+ribbon:
+  okhttp:
+    enabled: true
 zuul:
   routes:
     api0:
