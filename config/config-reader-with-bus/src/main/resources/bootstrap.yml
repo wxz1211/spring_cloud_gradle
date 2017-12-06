@@ -1,0 +1,30 @@
+server:
+  port: 8882
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+spring:
+  application:
+    name: config-reader
+  cloud:
+    config:
+      label:  master
+      profile:  dev
+      uri:  http://localhost:8888/
+  rabbitmq:
+    host: yourRabbitMqHost
+    port: 000 #yourRabbitPort
+    username: rabbitUserName
+    password: rabbitUserPwd
+logging:
+  level:
+    org:
+      springframework:
+        cloud:  DEBUG
+management:
+  security:
+    enabled: false
+

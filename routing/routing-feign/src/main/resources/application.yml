@@ -1,0 +1,30 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://peer1:8078/eureka/,http://peer2:8079/eureka/,http://peer3:8080/eureka/
+server:
+  port: 8765
+spring:
+  application:
+    name: service-feign
+  sleuth:
+    sampler:
+      percentage: 1
+  zipkin:
+    base-url: http://127.0.0.1:9411
+feign:
+  hystrix:
+    enabled: true
+
+hystrix:
+  threadpool:
+    default:
+      coreSize: 1000 #并发执行的最大线程数，默认10
+      maxQueueSize: 1000 #BlockingQueue的最大队列数
+      queueSizeRejectionThreshold: 500 #即使maxQueueSize没有达到，达到queueSizeRejectionThreshold该值后，请求也会被拒绝
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 50000

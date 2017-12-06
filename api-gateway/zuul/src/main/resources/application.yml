@@ -1,0 +1,25 @@
+server:
+  port: 8769
+eureka:
+  client:
+    service-url:
+      defaultZone: http://peer1:8078/eureka/,http://peer2:8079/eureka/,http://peer3:8080/eureka/
+spring:
+  sleuth:
+    sampler:
+      percentage: 1
+  zipkin:
+    base-url: http://127.0.0.1:9411
+  application:
+    name: zuul
+zuul:
+  routes:
+    api0:
+      path: /api0/**
+      serviceId: eureka-demo-client
+    api1:
+      path: /api1/**
+      serviceId: eureka-demo-client0
+    api2:
+      path: /api2/**
+      serviceId: service-feign

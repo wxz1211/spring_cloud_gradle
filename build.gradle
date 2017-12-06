@@ -1,0 +1,92 @@
+ext {
+    version = [
+            "redis-client"       : "1.5.11",
+            "mongo-client"       : "1.1.7",
+            "slf4j-api"          : "1.7.22",
+            "logback-classic"    : "1.1.10",
+            "spring-kafka"       : "2.1.0.RELEASE",
+            "guava"              : "21.0",
+            "okhttp"             : "3.8.1",
+            "testng"             : "6.1.1",
+            "fastjson"           : "1.2.28"
+    ]
+    dependencies = [
+            "redis-client"       : "com.eastmoney.datacenter:redis-client:${ext.version['redis-client']}",
+            "mongo-client"       : "com.eastmoney.datacenter:mongo-client:${ext.version['mongo-client']}",
+            "slf4j-api"          : "org.slf4j:slf4j-api:${ext.version['slf4j-api']}",
+            "fastjson"           : "com.alibaba:fastjson:${ext.version['fastjson']}",
+            "jcl-over-slf4j"     : "org.slf4j:jcl-over-slf4j:${ext.version['slf4j-api']}",
+            "log4j-over-slf4j"   : "org.slf4j:log4j-over-slf4j:${ext.version['slf4j-api']}",
+            "jul-to-slf4j"       : "org.slf4j:jul-to-slf4j:${ext.version['slf4j-api']}",
+            "logback-classic"    : "ch.qos.logback:logback-classic:${ext.version['logback-classic']}",
+            "spring-kafka"       : "org.springframework.kafka:spring-kafka:${ext.version['spring-kafka']}",
+            "guava"              : "com.google.guava:guava:${ext.version['guava']}",
+            "okhttp"             : "com.squareup.okhttp3:okhttp:${ext.version['okhttp']}",
+            "testng"             : "org.testng:testng:${ext.version['testng']}"
+    ]
+}
+
+
+buildscript {
+    repositories {
+        maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath "se.transmode.gradle:gradle-docker:${transmodeGradleDockerVersion}"
+    }
+}
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'idea'
+
+    group = 'com.example'
+    version = '0.0.1-SNAPSHOT'
+    sourceCompatibility = 1.8
+
+    repositories {
+        maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+        mavenCentral()
+    }
+
+    dependencies {
+        testCompile "org.springframework.boot:spring-boot-starter-test"
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+            mavenBom rootProject.ext.dependencies['slf4j-api']
+            mavenBom rootProject.ext.dependencies['jcl-over-slf4j']
+            mavenBom rootProject.ext.dependencies['log4j-over-slf4j']
+            mavenBom rootProject.ext.dependencies['jul-to-slf4j']
+            mavenBom rootProject.ext.dependencies['logback-classic']
+            mavenBom rootProject.ext.dependencies['fastjson']
+        }
+    }
+
+    if (project.subprojects) {
+        bootRepackage {
+            enabled = false
+        }
+    } else {
+        apply plugin: 'docker'
+        docker {
+            maintainer = ''
+            baseImage = 'openjdk:8-jre-alpine'
+        }
+        task dockerBuild(type: Docker, dependsOn: build) {
+            applicationName = project.name
+            addFile {
+                from configurations.archives.artifacts.files
+                into '/data/workspace/' + project.name
+            }
+            workingDir '/data/workspace/' + project.name
+            setEnvironment('HOST_MACHINE_IP', hostMachineIp)
+            defaultCommand(['java', '-jar', '-Dspring.profiles.active=docker', "${project.name}-${project.version}.jar"])
+        }
+    }
+
+}

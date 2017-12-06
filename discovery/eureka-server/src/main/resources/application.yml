@@ -1,0 +1,112 @@
+spring:
+  profiles: peer1
+  application:
+    name: eureka-server
+server:
+  port: 8078
+eureka:
+  server:
+    #自我保护机制是否开启
+    enable-self-preservation: true
+    #自我保护系数
+    renewal-percent-threshold: 0.3
+    # 设置如果Eureka Server启动时无法从临近Eureka Server节点获取注册信息，它多久不对外提供注册服务
+    wait-time-in-ms-when-sync-empty: 6000000
+    # 集群之间相互更新节点信息的时间频率
+    peer-eureka-nodes-update-interval-ms: 60000
+  instance:
+    hostname: peer1
+    lease-renewal-interval-in-seconds: 30
+  client:
+    serviceUrl:
+      defaultZone: http://peer2:8079/eureka/,http://peer3:8080/eureka/
+    #注册自身到eureka服务器
+    register-with-eureka: true
+    #是否从eureka服务器获取注册信息
+    fetchRegistry: false
+    # 客户端从Eureka Server集群里更新Eureka Server信息的频率
+    eureka-service-url-poll-interval-seconds: 60
+---
+spring:
+  profiles: peer2
+  application:
+    name: eureka-server
+server:
+  port: 8079
+eureka:
+  server:
+    #自我保护机制是否开启
+    enable-self-preservation: true
+    #自我保护系数
+    renewal-percent-threshold: 0.3
+    # 设置如果Eureka Server启动时无法从临近Eureka Server节点获取注册信息，它多久不对外提供注册服务
+    wait-time-in-ms-when-sync-empty: 6000000
+    # 集群之间相互更新节点信息的时间频率
+    peer-eureka-nodes-update-interval-ms: 60000
+  instance:
+    hostname: peer2
+  client:
+    serviceUrl:
+      defaultZone: http://peer1:8078/eureka/,http://peer3:8080/eureka/
+    #注册自身到eureka服务器
+    register-with-eureka: true
+    #是否从eureka服务器获取注册信息
+    fetchRegistry: false
+    # 客户端从Eureka Server集群里更新Eureka Server信息的频率
+    eureka-service-url-poll-interval-seconds: 60
+---
+spring:
+  profiles: peer3
+  application:
+    name: eureka-server
+server:
+  port: 8080
+eureka:
+  server:
+    #自我保护机制是否开启
+    enable-self-preservation: true
+    #自我保护系数
+    renewal-percent-threshold: 0.3
+    # 设置如果Eureka Server启动时无法从临近Eureka Server节点获取注册信息，它多久不对外提供注册服务
+    wait-time-in-ms-when-sync-empty: 6000000
+    # 集群之间相互更新节点信息的时间频率
+    peer-eureka-nodes-update-interval-ms: 60000
+  instance:
+    hostname: peer3
+  client:
+    serviceUrl:
+      defaultZone: http://peer1:8078/eureka/,http://peer2:8079/eureka/
+    #注册自身到eureka服务器
+    register-with-eureka: true
+    #是否从eureka服务器获取注册信息
+    fetchRegistry: false
+    # 客户端从Eureka Server集群里更新Eureka Server信息的频率
+    eureka-service-url-poll-interval-seconds: 60
+---
+spring:
+  profiles: peer4
+  application:
+    name: eureka-server
+server:
+  port: 7215
+eureka:
+  server:
+    #自我保护机制是否开启
+    enable-self-preservation: true
+    #自我保护系数
+    renewal-percent-threshold: 0.3
+    # 设置如果Eureka Server启动时无法从临近Eureka Server节点获取注册信息，它多久不对外提供注册服务
+    wait-time-in-ms-when-sync-empty: 6000000
+    # 集群之间相互更新节点信息的时间频率
+    peer-eureka-nodes-update-interval-ms: 60000
+  instance:
+    hostname: localhost
+  client:
+    serviceUrl:
+      defaultZone: http://127.0.0.1:7215/eureka/
+    #注册自身到eureka服务器
+    register-with-eureka: false
+    #是否从eureka服务器获取注册信息
+    fetchRegistry: false
+    # 客户端从Eureka Server集群里更新Eureka Server信息的频率
+    eureka-service-url-poll-interval-seconds: 60

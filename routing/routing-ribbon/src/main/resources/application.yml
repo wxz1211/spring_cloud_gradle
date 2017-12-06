@@ -1,0 +1,9 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://peer1:8078/eureka/,http://peer2:8079/eureka/,http://peer3:8080/eureka/
+server:
+  port: 8764
+spring:
+  application:
+    name: service-ribbon

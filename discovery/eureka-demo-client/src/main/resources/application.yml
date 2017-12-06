@@ -1,0 +1,33 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://peer1:8078/eureka/,http://peer2:8079/eureka/,http://peer3:8080/eureka/
+  instance:
+    prefer-ip-address: true
+server:
+  port: 8763
+spring:
+  sleuth:
+    sampler:
+      percentage: 1
+  zipkin:
+    base-url: http://127.0.0.1:9411
+  application:
+    name: eureka-demo-client
+feign:
+  hystrix:
+    enabled: true
+
+
+hystrix:
+  threadpool:
+    default:
+      coreSize: 1000 #并发执行的最大线程数，默认10
+      maxQueueSize: 1000 #BlockingQueue的最大队列数
+      queueSizeRejectionThreshold: 500 #即使maxQueueSize没有达到，达到queueSizeRejectionThreshold该值后，请求也会被拒绝
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 50000
