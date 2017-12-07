@@ -6,7 +6,13 @@ eureka:
     prefer-ip-address: true
 server:
   port: 8763
+  error:
+    path: /error
 spring:
+#  mvc:
+#    static-path-pattern: /**
+#    favicon:
+#      enabled: false
   sleuth:
     sampler:
       percentage: 1

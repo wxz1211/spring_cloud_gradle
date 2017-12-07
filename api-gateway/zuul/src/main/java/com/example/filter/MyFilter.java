@@ -7,7 +7,6 @@ import com.example.log.feign.ILogService;
 import com.example.util.ZuulUtil;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.http.HttpServletRequestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +84,6 @@ public class MyFilter extends ZuulFilter {
         } catch (IOException e) {
             return null;
         }
-
         String remoteAddress = request.getRemoteAddr();
         String localAddr = request.getLocalAddr();
         String pathInfo = request.getPathInfo();
@@ -98,30 +96,22 @@ public class MyFilter extends ZuulFilter {
         String httpMethod = request.getMethod();
         String path = ZuulUtil.parsePath(request.getRequestURI());
         Map<String, Object> args = ZuulUtil.parseParam(request.getRequestURI());
-//        HttpServletRequestWrapper
 
         LOGGER.debug("recv path:{}", request.getRequestURL().toString() + method);
         LOGGER.info(String.format("%s >>> %s", request.getMethod(), request.getRequestURL().toString() + "/" + method));
         LOGGER.info(String.format("%s >>> %s", request.getMethod(), request.getServletPath() + "/" + method));
-
         requestContext.put(REQUEST_URI_KEY, "/" + method);
+        DbLog.getInstance().setLogService(logService).offerQueue(new LogInfo("time :  " + System.currentTimeMillis() + "token is empty"));
+        //requestContext.setSendZuulResponse(false);
+        //requestContext.setResponseStatusCode(401);
+//        try {
+//            requestContext.getResponse().getWriter().write("token is empty");
+//        } catch (Exception e) {
+//
+//        }
 
-
-        Object accessToken = request.getParameter("token");
-        if (accessToken != null) {
-            LOGGER.warn("token is empty");
-            DbLog.getInstance().setLogService(logService).offerQueue(new LogInfo("time :  " + System.currentTimeMillis() + "token is empty"));
-            requestContext.setSendZuulResponse(false);
-            requestContext.setResponseStatusCode(401);
-            try {
-                requestContext.getResponse().getWriter().write("token is empty");
-            } catch (Exception e) {
-
-            }
-            return null;
-        }
-        LOGGER.info("ok");
-        return true;
+        //LOGGER.info("ok");
+        return null;
     }
 
 }

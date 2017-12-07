@@ -1,5 +1,6 @@
 package com.example.fallback;
 
+import com.alibaba.fastjson.JSON;
 import org.springframework.cloud.netflix.zuul.filters.route.FallbackProvider;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,11 +20,6 @@ import java.io.InputStream;
 public class EurekaDemoClientFallbackProvider implements FallbackProvider {
 
     @Override
-    public ClientHttpResponse fallbackResponse(Throwable cause) {
-        return null;
-    }
-
-    @Override
     public String getRoute() {
         return "eureka-demo-client";
     }
@@ -40,7 +36,7 @@ public class EurekaDemoClientFallbackProvider implements FallbackProvider {
 
             @Override
             public InputStream getBody() throws IOException {
-                return new ByteArrayInputStream(("fallback"+EurekaDemoClientFallbackProvider.this.getRoute()).getBytes());
+                return new ByteArrayInputStream((JSON.toJSONString(Response.getFailInstance(0, "Internal Server Error","client"))).getBytes());
             }
 
             @Override
@@ -63,5 +59,10 @@ public class EurekaDemoClientFallbackProvider implements FallbackProvider {
 
             }
         };
+    }
+
+    @Override
+    public ClientHttpResponse fallbackResponse(Throwable cause) {
+        return fallbackResponse();
     }
 }

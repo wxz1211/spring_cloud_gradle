@@ -1,5 +1,9 @@
 package com.example;
 
+import com.example.exception.ClientException;
+import com.example.inspector.InspectorManager;
+import com.example.model.RequestInfo;
+import com.example.util.Constants;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -8,7 +12,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.Type;
 
 /**
  * @author xianzhi.wang
@@ -17,6 +20,16 @@ import java.lang.reflect.Type;
 @Component
 public class SpecialArgumentsResolver implements HandlerMethodArgumentResolver {
 
+    private InspectorManager inspectorManager = InspectorManager.STANDARD;
+
+    public SpecialArgumentsResolver(){
+
+    }
+
+    public SpecialArgumentsResolver(String value) {
+        this.inspectorManager = InspectorManager.valueOf(value);
+    }
+
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -24,15 +37,15 @@ public class SpecialArgumentsResolver implements HandlerMethodArgumentResolver {
     }
 
     @Override
-    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-        return this.readArguments(webRequest, parameter, parameter.getGenericParameterType());
-    }
-
-    private Object readArguments(NativeWebRequest webRequest, MethodParameter parameter, Type genericParameterType) {
+    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws ClientException {
         final HttpServletRequest httpServletRequest = webRequest.getNativeRequest(HttpServletRequest.class);
         RequestInfo requestInfo = new RequestInfo();
-        httpServletRequest.setAttribute("request_info", requestInfo);
+        httpServletRequest.setAttribute(Constants.REQUEST_INFO_TAG, requestInfo);
+        try {
+            inspectorManager.check(httpServletRequest, requestInfo);
+        } catch (ClientException e) {
+            throw e;
+        }
         return requestInfo;
     }
-
 }
