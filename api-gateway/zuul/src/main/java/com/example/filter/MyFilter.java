@@ -1,12 +1,16 @@
 package com.example.filter;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.example.fallback.Response;
 import com.example.log.DbLog;
 import com.example.log.LogInfo;
 import com.example.log.feign.ILogService;
 import com.example.util.ZuulUtil;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +20,8 @@ import javax.annotation.PostConstruct;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Map;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.REQUEST_URI_KEY;
@@ -75,11 +81,12 @@ public class MyFilter extends ZuulFilter {
     @Override
     public Object run() {
         RequestContext requestContext = RequestContext.getCurrentContext();
+
         HttpServletRequest request = requestContext.getRequest();
         String postString = null;
         try {
             ServletInputStream servletInputStream = request.getInputStream();
-            postString = ZuulUtil.convertStreamToString(servletInputStream);
+            postString = IOUtils.toString(servletInputStream, "utf-8");
             LOGGER.info(postString);
         } catch (IOException e) {
             return null;
@@ -89,18 +96,48 @@ public class MyFilter extends ZuulFilter {
         String pathInfo = request.getPathInfo();
 
         LOGGER.info("{} ,{} , {}", remoteAddress, localAddr, pathInfo);
-        JSONObject jsonObject = JSONObject.parseObject(postString);
-        String method = jsonObject.get("method").toString();
+        String method = "";
+        String serviceName = "";
+        try {
+            JSONObject jsonObject = JSONObject.parseObject(postString);
+            method = jsonObject.get("method").toString();
+            serviceName = jsonObject.get("serviceName").toString();
+        } catch (Exception e) {
+            requestContext.setSendZuulResponse(false);
+            requestContext.setResponseStatusCode(401);
+            try {
+                requestContext.getResponse().getWriter().write(JSON.toJSONString(Response.getFailInstance(200, "wrong data", "")));
+            } catch (Exception e1) {
+
+            }
+            return null;
+        }
+
 
         String clientIp = remoteAddress;
         String httpMethod = request.getMethod();
         String path = ZuulUtil.parsePath(request.getRequestURI());
         Map<String, Object> args = ZuulUtil.parseParam(request.getRequestURI());
 
+       if(StringUtils.isEmpty(path)||path.length()==1){
+
+            requestContext.put(REQUEST_URI_KEY, "/" + method);
+
+            URL url = null;
+            try {
+                url = new URL(request.getRequestURL().toString()+serviceName);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            requestContext.setRouteHost(url);
+        }else{
+            requestContext.put(REQUEST_URI_KEY, "/" + method);
+        }
         LOGGER.debug("recv path:{}", request.getRequestURL().toString() + method);
+
         LOGGER.info(String.format("%s >>> %s", request.getMethod(), request.getRequestURL().toString() + "/" + method));
         LOGGER.info(String.format("%s >>> %s", request.getMethod(), request.getServletPath() + "/" + method));
-        requestContext.put(REQUEST_URI_KEY, "/" + method);
+
         DbLog.getInstance().setLogService(logService).offerQueue(new LogInfo("time :  " + System.currentTimeMillis() + "token is empty"));
         //requestContext.setSendZuulResponse(false);
         //requestContext.setResponseStatusCode(401);

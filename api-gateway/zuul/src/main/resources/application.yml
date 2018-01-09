@@ -26,3 +26,6 @@ zuul:
     api2:
       path: /api2/**
       serviceId: service-feign
+    api3:
+      path: /
+      serviceId:
